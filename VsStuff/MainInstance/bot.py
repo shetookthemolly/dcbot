@@ -34,7 +34,7 @@ async def on_ready():
 class HelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         embed = discord.Embed(title="Help", description="List of available commands:", color=discord.Color.blue())
-        prefix = self.clean_prefix
+        prefix = self.context.clean_prefix
         for cog, commands in mapping.items():
             if commands:
                 command_list = '\n'.join([f'`{prefix}{command.name}`: {command.help}' for command in commands])
