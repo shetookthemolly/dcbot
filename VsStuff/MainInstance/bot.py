@@ -29,7 +29,7 @@ threading.Thread(target=run_flask).start()
 
 class HelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
-        embed = discord.Embed(title="Help", description="List of available commands:", color=discord.Color.blue())
+        embed = discord.Embed(title="Help", description="List of available commands:", color=discord.Color.red())
         prefix = self.context.clean_prefix
         for cog, commands_list in mapping.items():
             commands_list = [c for c in commands_list if not c.hidden]
