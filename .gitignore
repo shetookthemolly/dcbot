@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Token and environment files
+Token/
+*.env
+.env
+
+# VS Code
+.vscode/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Misc
+.pytest_cache/
+coverage.xml
+htmlcov/
