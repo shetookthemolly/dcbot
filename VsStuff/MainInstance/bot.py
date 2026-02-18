@@ -7,6 +7,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import discord
 
+print("Starting bot from: " + __file__)
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
@@ -25,7 +26,7 @@ def run_flask():
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
 
-threading.Thread(target=run_flask).start()
+threading.Thread(target=run_flask, daemon=True).start()
 
 class HelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
@@ -47,14 +48,32 @@ bot.help_command = HelpCommand()
 
 @bot.event
 async def on_ready():
+    print('Synced slash commands for all guilds.')
     print(f'Logged in as {bot.user}')
     print('------------------------------')
+    try:
+        for guild in bot.guilds:
+            await bot.tree.sync(guild=guild)
+    except Exception as e:
+        print(f"Error syncing commands: {e}")
 
 async def main():
-    cogs_path = pathlib.Path('./VsStuff/MainInstance/Cogs')
-    for cog_file in cogs_path.glob('*.py'):
-        cog_name = f"VsStuff.MainInstance.Cogs.{cog_file.stem}"
-        await bot.load_extension(cog_name)
-    await bot.start(DISCORD_TOKEN)
+    async with bot:
+        base_dir = pathlib.Path(__file__).parent
+        cogs_path = base_dir / "Cogs"
+
+        for cog_file in cogs_path.glob('*.py'):
+            if cog_file.name == "__init__.py":
+                continue
+
+            cog_name = f"Cogs.{cog_file.stem}"
+            print(f"Loading {cog_name}")
+            await bot.load_extension(cog_name)
+
+        try:
+            await bot.start(DISCORD_TOKEN)
+        except KeyboardInterrupt:
+            print("Shutting down...")
+            await bot.close()
 
 asyncio.run(main())
