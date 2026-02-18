@@ -55,6 +55,6 @@ async def main():
     for cog_file in cogs_path.glob('*.py'):
         cog_name = f"VsStuff.MainInstance.Cogs.{cog_file.stem}"
         await bot.load_extension(cog_name)
-    await bot.run(DISCORD_TOKEN)
+    await bot.start(DISCORD_TOKEN)
 
 asyncio.run(main())

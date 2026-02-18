@@ -29,4 +29,4 @@ class General(commands.Cog):
 
     @classmethod
     async def setup(cls, bot):
-        bot.add_cog(General(bot))
+        await bot.add_cog(General(bot))
