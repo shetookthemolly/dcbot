@@ -8,15 +8,16 @@ class General(commands.Cog):
 
     @commands.command(name='ping', help='Responds with Pong')
     async def ping(self, ctx):
-        await ctx.send('Pong!')
-
-    @commands.command(name='echo', help='Echoes the provided message')
-    async def echo(self, ctx, *, message):
-        embed = discord.Embed(title=f'{self.bot.user.name} :p', description=f'{message}!', color=discord.Color.red())
+        embed = discord.Embed(title=f'***From:*** {self.bot.user.name} :p', description=f'Pong!', color=discord.Color.red())
         await ctx.send(embed=embed)
 
-    @commands.command(name='av', help='Shows the avatar of the mentioned user or yourself if no user is mentioned')
-    async def av(self, ctx, user: discord.User = None):
+    @commands.command(name='echo', aliases=['ec', 'repeat'], help='Echoes the provided message')
+    async def echo(self, ctx, *, message):
+        embed = discord.Embed(title=f'***From:*** {self.bot.user.name} :p', description=f'{message}!', color=discord.Color.red())
+        await ctx.send(embed=embed)
+
+    @commands.command(name='avatar', aliases=['av', 'pfp'], help='Shows the avatar of the mentioned user or yourself if no user is mentioned')
+    async def avatar(self, ctx, user: discord.User = None):
         embed = discord.Embed(title=f"{user.name}'s Avatar" if user else f"{ctx.author.name}'s Avatar", color=discord.Color.red())
         if user is None:
             user = ctx.author
@@ -62,6 +63,53 @@ class General(commands.Cog):
 
         except Exception as e:
             await interaction.followup.send(f"An error occurred while creating the embed: {e}", ephemeral=True)
+    
+    @commands.Cog.listener()
+    async def on_message_delete(self, message):
+        if not message.author.bot:
+            self.bot.sniped_messages[message.channel.id] = {
+                "content": message.content,
+                "author_name": message.author.name,
+                "author_avatar": message.author.display_avatar.url,
+                "author_id": message.author.id,
+                "attachments": [a.url for a in message.attachments],
+                "embeds": [e.to_dict() for e in message.embeds]
+        }
+
+    
+    @commands.command(name='snipe', aliases=['s', 'sn'], help='Snipes the last deleted message in the channel')
+    async def snipe(self, ctx):
+        channel_id = ctx.channel.id
+
+        if channel_id not in self.bot.sniped_messages:
+            embed = discord.Embed(title="Error", description="There is no recently deleted message to snipe in this channel.", color=discord.Color.red())
+            return await ctx.send(embed=embed)
+
+        sniped_message = self.bot.sniped_messages[channel_id]
+
+        embed = discord.Embed(
+            title=f"Sniped Message from {sniped_message['author_name']}",
+            description=sniped_message['content'] or "No text content",
+            color=discord.Color.red()
+        )
+
+        embed.set_author(
+            name=sniped_message['author_name'],
+            icon_url=sniped_message['author_avatar']
+        )
+
+        await ctx.send(embed=embed)
+
+        for attachment in sniped_message['attachments']:
+            await ctx.send(attachment)
+
+        for embed_data in sniped_message['embeds']:
+            await ctx.send(embed=discord.Embed.from_dict(embed_data))
+
+        if sniped_message['author_id'] == self.bot.user.id:
+            del self.bot.sniped_messages[channel_id]
+
+    
     
 async def setup(bot: commands.Bot):
     await bot.add_cog(General(bot))
